@@ -1,26 +1,28 @@
-# Tint Tangle — prototype
+# Fold & Print — prototype
 
-Hybrid casual color-mixing puzzle. Only red, yellow and blue paint exist; green, orange and purple pixels must be mixed by painting two colors on the same pixel.
+Hybrid casual paper-folding puzzle. Fold a sheet with wet paint blots so the paint prints onto the other side and matches the target picture. Where two colors land on each other they mix: blue + yellow = green.
 
 ## Play
 
 Open `index.html` in any browser (desktop or phone). No build step, no dependencies.
 
-## How it plays
+## Rules
 
-- Tap the front bucket of a rack column. It rides the belt around the picture.
-- Each step, the bucket sprays the first unfinished pixel in its line, if that pixel still needs its color.
-- Finished pixels let paint pass through; half-mixed pixels (striped) block other colors until finished.
-- A bucket with paint left after one lap parks in the Dock. Dock full = lose. Picture complete = win.
+- Tap a crease tab (under the sheet for vertical folds, right of it for horizontal), check the preview, then tap FOLD.
+- Both sides of the fold print onto each other (like an ink-blot butterfly).
+- Paint landing where the target has none = Smudged (lose). Using all folds without matching = lose.
+- Taped squares can't receive paint; tape peels off after one fold.
+- Dry paint (matte, dotted ring) never prints but can still receive.
 
-## What's in this build
+## Sheets in this build
 
-| Level | Teaches |
-| --- | --- |
-| 1 Cherry | Tap, spray, primaries |
-| 2 Frog | Green = Blue + Yellow |
-| 3 Sunset | Orange, mixed edges blocking inner pixels |
-| 4 Grapes | Purple, hidden `?` buckets |
-| 5 Parrot | Frozen pixels (one hit of any color cracks the ice) |
+| # | Sheet | Teaches |
+| --- | --- | --- |
+| 1 | Butterfly | Fold = mirror print |
+| 2 | Leaf | Blue + Yellow = Green |
+| 3 | Flower | Two folds |
+| 4 | Lighthouse | Off-center creases |
+| 5 | Kite | Tape, fold order |
+| 6 | Owl | Dry paint |
 
-Prototype limits: difficulty is not tuned yet (levels are teaching levels), no meta/Gallery, no boosters except the +1 Dock slot on fail.
+Every sheet was brute-force checked: each has a winning fold sequence, and most first folds smudge, so the choice matters.
