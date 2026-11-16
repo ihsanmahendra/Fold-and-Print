@@ -115,8 +115,8 @@ function tabs() {
   return t;
 }
 function foldBtn() { return { x: W / 2, y: sy + board.h * cs + 82, w: 200, h: 50 }; }
-function undoBtn() { return { x: 48, y: H - 40, w: 76, h: 36 }; }
-function resetBtn() { return { x: W - 48, y: H - 40, w: 76, h: 36 }; }
+function undoBtn() { return { x: 48, y: H - 62, w: 76, h: 36 }; }
+function resetBtn() { return { x: W - 48, y: H - 62, w: 76, h: 36 }; }
 const inBox = (mx, my, b) => Math.abs(mx - b.x) <= b.w / 2 && Math.abs(my - b.y) <= b.h / 2;
 
 cv.addEventListener('pointerdown', e => {
@@ -257,7 +257,8 @@ function draw() {
     ctx.fillStyle = '#2a2622'; ctx.font = '700 13px system-ui'; ctx.fillText(label, b.x, b.y + 5); ctx.globalAlpha = 1; });
   // Copyright / Hak cipta
   ctx.fillStyle = '#a89f92'; ctx.font = '10.5px system-ui';
-  ctx.fillText('© 2026 Ihsan Mahendra. All rights reserved. Hak cipta dilindungi undang-undang.', W / 2, H - 6);
+  ctx.fillText('© 2026 Ihsan Mahendra. All rights reserved.', W / 2, H - 22);
+  ctx.fillText('Hak cipta dilindungi undang-undang.', W / 2, H - 8);
 }
 
 // Draws the paper and paint. With a crease, draws only one side; 'flip' side is scaled around the crease (s from 1 to -1).
