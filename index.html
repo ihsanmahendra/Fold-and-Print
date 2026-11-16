@@ -60,7 +60,7 @@ const LEVELS = [
 // ---------- State ----------
 const cv = document.getElementById('c'), ctx = cv.getContext('2d');
 let W, H, DPR, L, lvl = 0, grid, gw, gh, rack, dock, dockMax, belt, particles, cellPx, gx, gy, state, flashes, stepTimer;
-const STEP_MS = 70, BELT_MAX = 3;
+const STEP_MS = 110, BELT_MAX = 3;
 
 function load(i) {
   lvl = i; L = LEVELS[i];
@@ -102,7 +102,7 @@ function layout() {
   const area = Math.min(W - 40, H * 0.42);
   cellPx = Math.floor(area / (Math.max(gw, gh) + 2));
   gx = (W - gw * cellPx) / 2;
-  gy = 116 + cellPx;
+  gy = 150 + cellPx;
 }
 window.addEventListener('resize', () => { if (L) layout(); });
 
@@ -140,7 +140,9 @@ cv.addEventListener('pointerdown', e => {
   rackSlots().forEach((col, ci) => { const s = col[0]; if (s && rack[ci].length && hit(mx, my, s)) launch(rack[ci].shift()); });
 });
 function hit(mx, my, s) { return Math.hypot(mx - s.x, my - s.y) <= s.r + 6; }
+let tapped = false;
 function launch(bk) {
+  tapped = true;
   if (belt.length >= BELT_MAX) { shakeBelt = 8; return; }
   bk.hid = false;
   // Spread launched buckets so they don't stack on the same belt cell.
@@ -171,7 +173,7 @@ function step() {
     if (tgt && bk.ammo > 0) {
       if (tgt.ice) { tgt.ice = false; spray(p, tgt, '#e8f4ff'); tgt.pop = 0.6; } // ice costs a pass, not paint
       else if ((tgt.need & bk.c) && !(tgt.has & bk.c)) {
-        tgt.has |= bk.c; bk.ammo--; spray(p, tgt, PAINT[bk.c]);
+        tgt.has |= bk.c; bk.ammo--; spray(p, tgt, PAINT[bk.c]); bk.beam = { x: tgt.x, y: tgt.y, t: 0 };
         tgt.pop = done(tgt) ? 1 : 0.5;
         if (done(tgt) && tgt.need !== bk.c) flashes.push({ x: tgt.x, y: tgt.y, t: 0 });
       }
@@ -246,6 +248,18 @@ function rackSlots() {
 
 function draw(frac) {
   ctx.clearRect(0, 0, W, H);
+  // Recipe bar: the mixes used in this level
+  const used = [...new Set(grid.filter(Boolean).map(c => c.need))].filter(n => n !== R && n !== Y && n !== B);
+  const recipes = used.length ? used : [R, Y, B];
+  const rw = 92, rx0 = W / 2 - (recipes.length * rw) / 2 + rw / 2, ry = 122;
+  recipes.forEach((n, i) => {
+    const cx = rx0 + i * rw, parts = [R, Y, B].filter(k => n & k);
+    ctx.fillStyle = '#1e2030'; rr(cx - 42, ry - 15, 84, 30, 15); ctx.fill();
+    if (parts.length === 1) { ctx.fillStyle = PAINT[n]; ctx.beginPath(); ctx.arc(cx, ry, 8, 0, 7); ctx.fill(); return; }
+    [PAINT[parts[0]], PAINT[parts[1]], PAINT[n]].forEach((col, j) => { ctx.fillStyle = col; ctx.beginPath(); ctx.arc(cx - 26 + j * 26, ry, j === 2 ? 9 : 7, 0, 7); ctx.fill(); });
+    ctx.fillStyle = '#9a9cb0'; ctx.font = '700 12px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('+', cx - 13, ry); ctx.fillText('=', cx + 13, ry); ctx.textBaseline = 'alphabetic';
+  });
   // HUD
   ctx.fillStyle = '#9a9cb0'; ctx.font = '600 13px system-ui'; ctx.textAlign = 'center';
   ctx.fillText(`LEVEL ${lvl + 1}`, W / 2, 30);
@@ -277,6 +291,12 @@ function draw(frac) {
         ctx.restore();
       }
       ctx.strokeStyle = c.ice ? '#e8f4ff' : '#4a4e6a'; ctx.lineWidth = c.ice ? 3 : 1; rr(-s / 2, -s / 2, s, s, 4); ctx.stroke();
+      // Dots = paints this pixel still needs (one dot per missing primary)
+      const missing = [R, Y, B].filter(k => (c.need & k) && !(c.has & k));
+      const dr = Math.max(2.5, s * .13), sp = dr * 2.6;
+      missing.forEach((k, i) => { ctx.fillStyle = PAINT[k]; ctx.beginPath();
+        ctx.arc((i - (missing.length - 1) / 2) * sp, 0, dr, 0, 7); ctx.fill();
+        ctx.strokeStyle = '#14151c'; ctx.lineWidth = 1; ctx.stroke(); });
     }
     ctx.restore();
   }
@@ -285,6 +305,13 @@ function draw(frac) {
   for (const f of flashes) { const p = cellCenter(f.x, f.y); ctx.globalAlpha = 1 - f.t / 300; ctx.strokeStyle = '#fff'; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.arc(p.x, p.y, cellPx * (.4 + f.t / 300), 0, 7); ctx.stroke(); ctx.globalAlpha = 1; }
 
+  // Spray beams
+  for (const bk of belt) {
+    if (!bk.beam || (bk.beam.t += 16) > 220) continue;
+    const a = cellCenter(pathAt(bk.step).x, pathAt(bk.step).y), t = cellCenter(bk.beam.x, bk.beam.y);
+    ctx.strokeStyle = PAINT[bk.c]; ctx.globalAlpha = .55 * (1 - bk.beam.t / 220); ctx.lineWidth = cellPx * .22; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(t.x, t.y); ctx.stroke(); ctx.globalAlpha = 1;
+  }
   // Spray particles
   for (const p of particles) {
     if (p.t < 0) continue;
@@ -309,8 +336,14 @@ function draw(frac) {
   const rs = rackSlots();
   ctx.fillStyle = '#9a9cb0'; ctx.fillText('RACK', W / 2, rs[0][0].y - rs[0][0].r - 12);
   rack.forEach((col, ci) => col.forEach((bk, k) => { const s = rs[ci][k]; ctx.globalAlpha = k === 0 ? 1 : .45; bucket(s.x, s.y, s.r, bk, k === 0); ctx.globalAlpha = 1; }));
+  if (lvl === 0 && !tapped && state === 'play') {
+    const s0 = rs[0][0], bob = Math.sin(performance.now() / 180) * 6;
+    ctx.strokeStyle = '#ffd34d'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(s0.x, s0.y, s0.r + 8 + bob / 2, 0, 7); ctx.stroke();
+    ctx.fillStyle = '#ffd34d'; ctx.font = '800 15px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText('TAP!', s0.x, s0.y + s0.r + 28 + bob);
+  }
   ctx.fillStyle = '#5d6080'; ctx.font = '12px system-ui';
-  ctx.fillText(`Belt ${belt.length}/${BELT_MAX}  ·  tap the front bucket of a column`, W / 2, H - 16);
+  ctx.fillText('Dots in a pixel = paint it still needs', W / 2, H - 16);
 }
 
 function bucket(x, y, r, bk, ring) {
@@ -332,6 +365,7 @@ function wrapText(t, x, y, maxW, lh) {
   ctx.fillText(line, x, y);
 }
 
+tapped = false;
 load(0);
 requestAnimationFrame(tick);
 </script>
