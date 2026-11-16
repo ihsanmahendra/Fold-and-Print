@@ -26,3 +26,7 @@ Open `index.html` in any browser (desktop or phone). No build step, no dependenc
 | 6 | Owl | Dry paint |
 
 Every sheet was brute-force checked: each has a winning fold sequence, and most first folds smudge, so the choice matters.
+
+## Copyright / Hak cipta
+
+© 2026 Ihsan Mahendra. All rights reserved. Hak cipta dilindungi undang-undang. See [LICENSE](LICENSE).

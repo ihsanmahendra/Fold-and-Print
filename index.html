@@ -3,7 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Fold & Print — Prototype</title>
+<title>Fold & Print</title>
+<meta name="description" content="Fold & Print: a paper-folding color-mixing puzzle. © 2026 Ihsan Mahendra. All rights reserved.">
+<meta name="author" content="Ihsan Mahendra">
+<meta name="copyright" content="© 2026 Ihsan Mahendra. All rights reserved. Hak cipta dilindungi undang-undang.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23fffdf8'/%3E%3Ccircle cx='11' cy='16' r='7' fill='%232f7de1'/%3E%3Ccircle cx='21' cy='16' r='7' fill='%23f5c518' fill-opacity='.85'/%3E%3C/svg%3E">
 <style>
   :root { --bg:#f3ede2; --ink:#2a2622; --quiet:#8b8277; --accent:#2a2622; }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -251,6 +255,9 @@ function draw() {
   [[ub, 'Undo', history.length > 0], [rb, 'Restart', true]].forEach(([b, label, on]) => {
     ctx.globalAlpha = on ? 1 : .35; ctx.strokeStyle = '#cfc5b6'; ctx.lineWidth = 1.5; rr(b.x - b.w / 2, b.y - b.h / 2, b.w, b.h, 10); ctx.stroke();
     ctx.fillStyle = '#2a2622'; ctx.font = '700 13px system-ui'; ctx.fillText(label, b.x, b.y + 5); ctx.globalAlpha = 1; });
+  // Copyright / Hak cipta
+  ctx.fillStyle = '#a89f92'; ctx.font = '10.5px system-ui';
+  ctx.fillText('© 2026 Ihsan Mahendra. All rights reserved. Hak cipta dilindungi undang-undang.', W / 2, H - 6);
 }
 
 // Draws the paper and paint. With a crease, draws only one side; 'flip' side is scaled around the crease (s from 1 to -1).
