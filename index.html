@@ -20,6 +20,7 @@
   .overlay.show { display:flex; }
   .overlay h1 { margin:0; font-size:34px; }
   .overlay p { margin:0; color:var(--quiet); max-width:300px; line-height:1.4; }
+  #gdd { position:absolute; top:12px; right:12px; font-size:13px; font-weight:700; color:var(--ink); text-decoration:none; border:1.5px solid #cfc5b6; border-radius:10px; padding:6px 10px; background:#fffdf8; }
   button { font:inherit; font-weight:700; font-size:17px; border:0; border-radius:14px; padding:14px 26px;
     background:var(--ink); color:#fff; cursor:pointer; min-width:200px; }
   button.ghost { background:transparent; color:var(--ink); border:2px solid #cfc5b6; }
@@ -28,6 +29,7 @@
 <body>
 <div id="wrap">
   <canvas id="c"></canvas>
+  <a id="gdd" href="gdd.html">Design doc</a>
   <div class="overlay" id="win"><h1>Printed!</h1><p id="winText"></p><button id="next">Next sheet</button></div>
   <div class="overlay" id="lose"><h1 id="loseTitle">Smudged!</h1><p id="loseText"></p>
     <button id="undoAd">Undo last fold</button><button class="ghost" id="retry">Start over</button></div>

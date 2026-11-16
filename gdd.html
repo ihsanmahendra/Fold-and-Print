@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fold & Print — Game Design Document</title>
+<meta name="description" content="Game design document for Fold & Print, a hybrid casual paper-folding color-mixing puzzle. © 2026 Ihsan Mahendra. All rights reserved.">
+<meta name="author" content="Ihsan Mahendra">
+<meta name="copyright" content="© 2026 Ihsan Mahendra. All rights reserved. Hak cipta dilindungi undang-undang.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23fffdf8'/%3E%3Ccircle cx='11' cy='16' r='7' fill='%232f7de1'/%3E%3Ccircle cx='21' cy='16' r='7' fill='%23f5c518' fill-opacity='.85'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;600;700&display=swap">
+<style>
+  :root {
+    --paper: #f3ede2; --sheet: #fffdf8; --ink: #2a2622; --quiet: #6f675d; --line: #ddd3c3;
+    --red: #e5484d; --yellow: #f5c518; --blue: #2f7de1; --green: #36b37e; --orange: #f08a24; --purple: #8e4ec6;
+    --display: "Fraunces", Georgia, serif; --body: "Inter", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper: #1c1a17; --sheet: #26231f; --ink: #f1ece4; --quiet: #a99f92; --line: #3d3832; }
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--paper); }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.6 var(--body); }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 max(16px, 4vw) 48px; }
+  header.hero { padding: 48px 0 28px; display: grid; gap: 18px; }
+  .eyebrow { text-transform: uppercase; letter-spacing: .12em; font-size: 12px; font-weight: 700; color: var(--quiet); }
+  h1 { font-family: var(--display); font-weight: 800; font-size: clamp(40px, 8vw, 68px); line-height: 1; margin: 0; text-wrap: balance; }
+  h2 { font-family: var(--display); font-weight: 800; font-size: clamp(26px, 4.5vw, 34px); margin: 0 0 12px; text-wrap: balance; }
+  h3 { font-size: 16px; margin: 22px 0 8px; }
+  p, li { max-width: 68ch; }
+  .lede { font-size: 19px; color: var(--quiet); margin: 0; }
+  .blots { display: flex; gap: 10px; align-items: center; font-weight: 700; color: var(--quiet); flex-wrap: wrap; }
+  .dot { width: 22px; height: 22px; border-radius: 50%; display: inline-block; }
+  .cta { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn { display: inline-block; padding: 12px 20px; border-radius: 12px; background: var(--ink); color: var(--paper); font-weight: 700; text-decoration: none; }
+  .btn.ghost { background: transparent; color: var(--ink); border: 2px solid var(--line); }
+  .btn:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+  nav.toc { position: sticky; top: 0; z-index: 5; background: var(--paper); border-bottom: 1px solid var(--line); margin: 0 calc(-1 * max(16px, 4vw)); padding: 10px max(16px, 4vw); overflow-x: auto; white-space: nowrap; }
+  nav.toc a { color: var(--quiet); text-decoration: none; font-size: 14px; font-weight: 600; margin-right: 18px; }
+  nav.toc a:hover { color: var(--ink); }
+  section { padding: 36px 0 8px; border-bottom: 1px solid var(--line); scroll-margin-top: 48px; }
+  .card { background: var(--sheet); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+  .rules { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin: 12px 0; }
+  .rules .card strong { display: block; margin-bottom: 4px; }
+  .table-wrap { overflow-x: auto; margin: 12px 0; border: 1px solid var(--line); border-radius: 10px; background: var(--sheet); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 560px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--quiet); }
+  tr:last-child td { border-bottom: 0; }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .yes { color: var(--green); font-weight: 700; } .no { color: var(--quiet); }
+  a { color: var(--blue); }
+  .mix { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin: 12px 0; }
+  .mix .card { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+  ol li, ul li { margin: 4px 0; }
+  footer { padding: 32px 0 0; color: var(--quiet); font-size: 13px; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  html { scroll-behavior: smooth; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">Game Design Document · Hybrid casual puzzle</div>
+    <h1>Fold &amp; Print</h1>
+    <p class="lede">A paper-folding puzzle. Each level is a sheet with wet paint blots and a target picture. Pick where to fold: paint prints onto the other side as a mirror image, and where two colors land on each other they mix.</p>
+    <div class="blots" aria-label="Blue plus yellow equals green">
+      <span class="dot" style="background:var(--blue)"></span>+<span class="dot" style="background:var(--yellow)"></span>=<span class="dot" style="background:var(--green)"></span>
+      <span style="margin-left:8px">One fold. Perfect print.</span>
+    </div>
+    <div class="cta"><a class="btn" href="./">Play the prototype</a><a class="btn ghost" href="https://github.com/ihsanmahendra/Fold-and-Print">Source on GitHub</a></div>
+  </header>
+
+  <nav class="toc" aria-label="Sections">
+    <a href="#core">1. Core mechanic</a><a href="#depth">2. Depth</a><a href="#obstacles">3. Obstacles</a><a href="#paradigm">4. Design paradigm</a><a href="#market">5. Marketability</a><a href="#plan">Production plan</a>
+  </nav>
+
+  <section id="core">
+    <h2>1. Core mechanic</h2>
+    <p><strong>Screen layout:</strong> target card at the top ("Make this", fold counter, color recipe), the paper sheet in the middle, crease tabs along the bottom (vertical folds) and right edge (horizontal folds), FOLD button below.</p>
+    <h3>Core loop</h3>
+    <ol>
+      <li>Compare the sheet with the target.</li>
+      <li>Tap a crease tab. A dashed line shows the crease; dotted rings preview where paint will land, and a red X marks a smudge.</li>
+      <li>Tap FOLD. The paper flips over, presses and opens: both sides print onto each other.</li>
+      <li>Repeat until the sheet matches the target. The print is framed in your Gallery.</li>
+    </ol>
+    <h3>Fold rules</h3>
+    <div class="rules">
+      <div class="card"><strong>Mirror print</strong>Every cell is mirrored across the crease; both sides print onto each other.</div>
+      <div class="card"><strong>Mixing</strong>Two colors on one cell mix into a new color.</div>
+      <div class="card"><strong>Paper edge</strong>Cells folded past the edge print nothing, so off-center creases protect one side.</div>
+      <div class="card"><strong>Permanent</strong>Paint can't be removed. Only adding is possible.</div>
+    </div>
+    <div class="mix">
+      <div class="card"><span class="dot" style="background:var(--blue)"></span>+<span class="dot" style="background:var(--yellow)"></span>=<span class="dot" style="background:var(--green)"></span>Green</div>
+      <div class="card"><span class="dot" style="background:var(--red)"></span>+<span class="dot" style="background:var(--yellow)"></span>=<span class="dot" style="background:var(--orange)"></span>Orange</div>
+      <div class="card"><span class="dot" style="background:var(--red)"></span>+<span class="dot" style="background:var(--blue)"></span>=<span class="dot" style="background:var(--purple)"></span>Purple</div>
+    </div>
+    <p><strong>Objective:</strong> reproduce the target picture with a fixed number of folds.<br>
+    <strong>Win:</strong> the sheet matches the target exactly.<br>
+    <strong>Lose:</strong> paint lands where the target has none ("Smudged!"), or every fold is used without a match. Fail offer: Undo last fold (rewarded ad) or start over.</p>
+    <h3>Why it is satisfying</h3>
+    <ul>
+      <li><strong>The reveal.</strong> Unfolding a sheet into a perfect symmetric print is a natural "wow", the same pleasure as the ink-blot butterfly from art class.</li>
+      <li><strong>Mixing payoff.</strong> Blue and yellow pressing into green is surprising and colorful every time.</li>
+      <li><strong>Few moves, big thinking.</strong> Most sheets take 1 to 4 folds, so each choice matters and a win feels earned.</li>
+      <li><strong>Tactile animation:</strong> flip, press, peel. It suits haptics and ASMR sound design.</li>
+    </ul>
+    <h3>What is different from the market</h3>
+    <ul>
+      <li><strong>Folding is not new; printing is.</strong> Existing paper-fold puzzles fold colored paper to complete a picture. Here folding transfers wet paint, so one fold changes both sides at once.</li>
+      <li><strong>Additive, permanent mixing.</strong> A wrong fold leaves a visible smudge, so every mistake is readable.</li>
+      <li><strong>Give/receive mechanics.</strong> Tape, dry paint, stamps and water drops change which cells print or accept paint.</li>
+      <li><strong>A fresh verb in today's charts.</strong> The leaders (jam, sort, screw and conveyor games) move or clear pieces; Fold &amp; Print transforms the whole board in one action.</li>
+    </ul>
+    <h3>Reference games</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Game</th><th>What it does</th><th>How Fold &amp; Print differs</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://apps.apple.com/py/app/paper-fold-paper-puzzle-3d/id1639255997?l=en-GB">Paper Fold: Paper Puzzle 3D</a> (Tumb Games)</td><td>Tap to fold along dashed lines until the picture is complete</td><td>Folds print paint both ways and mix colors; wrong folds smudge</td></tr>
+        <tr><td><a href="https://apps.apple.com/us/app/-/id6478161967">Color Fold Puzzle</a> (Fiber Games)</td><td>Fold colored papers in an order that reveals the right color combinations</td><td>Closest reference. Adds mirror printing, permanent mixing and give/receive obstacles</td></tr>
+        <tr><td><a href="https://apps.apple.com/be/app/color-mix-fold/id1629594628">Color Mix Fold</a> (Bedir Games)</td><td>Fold cards to find the right color</td><td>Picture targets, multi-fold planning, Gallery meta</td></tr>
+        <tr><td>Ink-blot butterfly (art class)</td><td>Fold-to-print reveal</td><td>Turned into a goal-driven puzzle</td></tr>
+        <tr><td>Color Block Jam / Pixel Flow!</td><td>Color goals, readable art, hybrid casual monetization</td><td>One whole-board action instead of moving pieces</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="depth">
+    <h2>2. Gameplay depth</h2>
+    <p>Depth grows on three dials: <strong>how many folds</strong> (1 to 5), <strong>which creases</strong> (center, off-center, diagonal) and <strong>what the paper does</strong> (tape, dry paint, cut-outs). Each world turns one dial, so the game always feels like one new idea.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Levels</th><th>World</th><th>New idea</th><th>What the player learns</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1–10</td><td>Bugs</td><td>One center fold, single colors</td><td>Fold = mirror print</td></tr>
+        <tr><td class="num">11–25</td><td>Garden</td><td>Mixing: green, orange, purple</td><td>Plan which color meets which</td></tr>
+        <tr><td class="num">26–40</td><td>Seaside</td><td>Off-center creases, 2 folds</td><td>The paper edge protects one side; order</td></tr>
+        <tr><td class="num">41–60</td><td>Workshop</td><td>Tape, dry paint</td><td>Shielding and sequencing</td></tr>
+        <tr><td class="num">61–80</td><td>Festival</td><td>Diagonal folds, 3 folds</td><td>New symmetry axis</td></tr>
+        <tr><td class="num">81–100</td><td>Night sky</td><td>Stamps, cut-outs, double-thick paper</td><td>Partial prints, holes</td></tr>
+        <tr><td class="num">101+</td><td>Remix</td><td>Mechanics combined, 4–5 folds, larger sheets</td><td>Mastery</td></tr>
+      </tbody>
+    </table></div>
+    <h3>How difficulty rises but stays intuitive</h3>
+    <ul>
+      <li><strong>The rule never changes.</strong> Every mechanic only edits which cells give or receive paint.</li>
+      <li><strong>Preview before commit.</strong> Difficulty comes from planning ahead, never from hidden rules.</li>
+      <li><strong>More folds, more combinations.</strong> A 7×7 sheet has 12 creases, so 3 folds give about 1,700 sequences; players reason backward from the target.</li>
+      <li><strong>Sawtooth pacing:</strong> every 5th level Hard, every 10th Super Hard with bonus coins, then 2 easy levels.</li>
+    </ul>
+    <h3>Why it lasts 100+ levels</h3>
+    <ul>
+      <li>Levels come from a target picture plus a solution; a solver checks each one. The prototype already brute-forces every fold sequence per level.</li>
+      <li>The printed picture is the content and the reward, so each level looks new.</li>
+      <li>From level 100, recombining 6–8 mechanics on larger sheets gives near-endless variety.</li>
+    </ul>
+  </section>
+
+  <section id="obstacles">
+    <h2>3. Obstacles &amp; mechanics</h2>
+    <p>Each element changes only which cells <strong>give</strong> or <strong>receive</strong> paint, so the level-1 rule never changes.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Element</th><th>Rule</th><th>Decision it creates</th><th>Intro</th><th>Prototype</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td><strong>Color mixing</strong></td><td>Two primaries on one cell make a secondary</td><td>Which blot must meet which</td><td class="num">11</td><td class="yes">Yes</td></tr>
+        <tr><td class="num">2</td><td><strong>Off-center crease</strong></td><td>Cells mirrored past the edge print nothing</td><td>Use the edge to protect a side</td><td class="num">26</td><td class="yes">Yes</td></tr>
+        <tr><td class="num">3</td><td><strong>Tape</strong></td><td>Taped cells can't receive paint; tape peels after one fold</td><td>Protect first, print later</td><td class="num">41</td><td class="yes">Yes</td></tr>
+        <tr><td class="num">4</td><td><strong>Dry paint</strong></td><td>Matte blots never print, but can still receive</td><td>Sources vs targets</td><td class="num">48</td><td class="yes">Yes</td></tr>
+        <tr><td class="num">5</td><td><strong>Diagonal fold</strong></td><td>Square sheets fold corner to corner</td><td>A new symmetry axis</td><td class="num">61</td><td class="no">No</td></tr>
+        <tr><td class="num">6</td><td><strong>Stamp</strong></td><td>Prints once, then turns dry</td><td>Pick the one fold it is used on</td><td class="num">70</td><td class="no">No</td></tr>
+        <tr><td class="num">7</td><td><strong>Cut-out hole</strong></td><td>Receives nothing; paint passes through on double folds</td><td>Plan multi-layer folds</td><td class="num">81</td><td class="no">No</td></tr>
+        <tr><td class="num">8</td><td><strong>Water drop</strong></td><td>Re-wets one dry blot when printed on</td><td>Wake up a dry source mid-puzzle</td><td class="num">90</td><td class="no">No</td></tr>
+      </tbody>
+    </table></div>
+    <h3>Boosters</h3>
+    <ul><li><strong>Undo:</strong> take back the last fold; the main fail-screen offer.</li><li><strong>Hint:</strong> shows the next correct crease.</li><li><strong>Eraser:</strong> removes one smudged cell.</li></ul>
+  </section>
+
+  <section id="paradigm">
+    <h2>4. Design paradigm</h2>
+    <h3>Why the mechanic is fun</h3>
+    <ul>
+      <li><strong>Anticipation, then reveal.</strong> Every fold has a beat of suspense and a payoff.</li>
+      <li><strong>Low input, high thinking.</strong> One tap changes the whole board.</li>
+      <li><strong>Mistakes teach.</strong> A smudge shows exactly where paint went and why.</li>
+      <li><strong>Real-world intuition.</strong> Everyone already understands folding paper and mixing paint.</li>
+    </ul>
+    <h3>What keeps players until Day 3</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Day</th><th>Hook</th><th>Why it pulls them back</th></tr></thead>
+      <tbody>
+        <tr><td>Day 1</td><td>15 quick sheets fill the first Gallery wall; mixing unlocks at level 11</td><td>An early "aha" and a finished collection in session 1</td></tr>
+        <tr><td>Day 2</td><td>Daily Print + login streak</td><td>A fresh picture and a reason beyond the next level</td></tr>
+        <tr><td>Day 3</td><td>Seaside world opens off-center folds; streak gives a free Hint</td><td>A new idea lands as the basic fold starts to feel known</td></tr>
+      </tbody>
+    </table></div>
+    <p>Meta layer: prints are framed in a <strong>Gallery</strong> the player decorates room by room with coins.</p>
+    <h3>How it avoids repetition</h3>
+    <ul>
+      <li>One new mechanic per world: a can't-fail intro, a practice level, then combinations.</li>
+      <li>Every level is a new picture.</li>
+      <li>Level types rotate: one-fold "spot the crease", multi-fold planning, tape-order puzzles, big poster sheets.</li>
+      <li>Events every 2 weeks refresh goals without new code.</li>
+    </ul>
+  </section>
+
+  <section id="market">
+    <h2>5. Marketability</h2>
+    <h3>Why players would download it</h3>
+    <ul>
+      <li>The ad shows the childhood ink-blot fold and asks "where would <em>you</em> fold?"</li>
+      <li>The answer is visible in one second, ideal for fail ads and "choose the right fold" ads.</li>
+      <li>Every win produces a pretty, shareable print.</li>
+    </ul>
+    <h3>First 30 seconds</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Time</th><th>What the player sees</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td class="num">0–3 s</td><td>Half a butterfly in wet purple paint; a pulsing crease tab says TAP</td><td>Zero-text start</td></tr>
+        <tr><td class="num">3–6 s</td><td>Paper flips, presses, opens: full symmetric butterfly</td><td>The reveal</td></tr>
+        <tr><td class="num">6–14 s</td><td>Leaf sheet: blue on the left, yellow on the right; fold, they press into green</td><td>The mixing "aha"</td></tr>
+        <tr><td class="num">14–24 s</td><td>Lighthouse: the wrong crease smudges red, undo, the right one prints clean</td><td>Tension and skill</td></tr>
+        <tr><td class="num">24–30 s</td><td>Prints framed on the Gallery wall</td><td>Reward and a reason to continue</td></tr>
+      </tbody>
+    </table></div>
+    <h3>Ad angles to test</h3>
+    <ol><li><strong>"Which fold?"</strong> Three crease options; wrong pick smudges, then the right one.</li><li><strong>ASMR print:</strong> slow-motion close-up of paint pressing and peeling apart.</li><li><strong>Impossible picture:</strong> a complex poster from 4 folds, "only 3% can print this".</li></ol>
+    <h3>What makes it stand out</h3>
+    <p>Fold puzzles exist, but they fold paper to complete a shape. Fold &amp; Print folds to <em>print</em>: wet paint transfers both ways, colors mix, and a wrong fold smudges. Every fold is a setup, a choice and a reveal in under 5 seconds.</p>
+    <h3>Why it can perform now</h3>
+    <ul>
+      <li>Proven hybrid casual model: rewarded Undo on fail, interstitials after level 10, booster IAP, ad-free pack.</li>
+      <li>Cheap to produce: 2D art, one core interaction, levels built from pictures with an auto-solver.</li>
+      <li>Easy creative iteration: a single fold is a complete story in under 5 seconds.</li>
+    </ul>
+  </section>
+
+  <section id="plan">
+    <h2>Prototype and 4-week production plan</h2>
+    <p>The <a href="./">playable prototype</a> has 6 sheets covering mirror printing, mixing, off-center creases, tape and dry paint, with fold preview, smudge fail and Undo. Every sheet was brute-force checked: each has a winning sequence, and most first folds smudge.</p>
+    <p>Soft-launch scope for a team of 1 programmer, 1 artist and 1 game designer: 60 levels, mechanics 1–4, boosters and the Gallery.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Week</th><th>Programmer</th><th>Artist</th><th>Game designer</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td>Fold logic, flip/press animation, preview, win/lose</td><td>Paper and paint style, 10 pictures</td><td>Mixing rules, levels 1–20, level format</td></tr>
+        <tr><td class="num">2</td><td>Tape, dry paint, off-center creases, level editor and solver</td><td>UI, fold VFX, haptics list, 15 pictures</td><td>Levels 21–40, difficulty curve, playtests</td></tr>
+        <tr><td class="num">3</td><td>Boosters, Gallery, ads SDK, analytics</td><td>Gallery rooms, 20 pictures, store icons</td><td>Levels 41–60, economy, ad briefs</td></tr>
+        <tr><td class="num">4</td><td>Bug fixing, performance, soft-launch build</td><td>3 ad videos, polish</td><td>Re-tune from playtest data, launch checklist</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>Risk to watch:</strong> players may not predict mirror positions at first. Mitigation: the live landing preview and can't-fail intro sheets.</p>
+  </section>
+
+  <footer>
+    © 2026 Ihsan Mahendra. All rights reserved. Hak cipta dilindungi undang-undang. See <a href="https://github.com/ihsanmahendra/Fold-and-Print/blob/main/LICENSE">LICENSE</a>.
+  </footer>
+</div>
+</body>
+</html>

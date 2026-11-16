@@ -4,7 +4,9 @@ Hybrid casual paper-folding puzzle. Fold a sheet with wet paint blots so the pai
 
 ## Play
 
-Open `index.html` in any browser (desktop or phone). No build step, no dependencies.
+Play online: https://ihsanmahendra.github.io/Fold-and-Print/ · Design doc: https://ihsanmahendra.github.io/Fold-and-Print/gdd.html
+
+Or open `index.html` in any browser (desktop or phone). No build step, no dependencies.
 
 ## Rules
 
