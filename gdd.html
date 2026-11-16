@@ -64,10 +64,9 @@
   <header class="hero">
     <div class="eyebrow">Game Design Document · Hybrid casual puzzle</div>
     <h1>Fold &amp; Print</h1>
-    <p class="lede">A paper-folding puzzle. Each level is a sheet with wet paint blots and a target picture. Pick where to fold: paint prints onto the other side as a mirror image, and where two colors land on each other they mix.</p>
+    <p class="lede">You get a sheet of paper with wet paint on it and a picture you need to make. You fold the paper, the paint prints onto the other side, and if two colors touch they mix. That's the whole game.</p>
     <div class="blots" aria-label="Blue plus yellow equals green">
       <span class="dot" style="background:var(--blue)"></span>+<span class="dot" style="background:var(--yellow)"></span>=<span class="dot" style="background:var(--green)"></span>
-      <span style="margin-left:8px">One fold. Perfect print.</span>
     </div>
     <div class="cta"><a class="btn" href="./">Play the prototype</a></div>
   </header>
@@ -78,182 +77,141 @@
 
   <section id="core">
     <h2>1. Core mechanic</h2>
-    <p><strong>Screen layout:</strong> target card at the top ("Make this", fold counter, color recipe), the paper sheet in the middle, crease tabs along the bottom (vertical folds) and right edge (horizontal folds), FOLD button below.</p>
+    <p>The idea came from the ink blot trick we all did in art class: put paint on one half of a paper, fold it, open it, and you get a butterfly. I wanted to turn that moment into a puzzle.</p>
+    <p>On screen, the target picture sits at the top with the fold counter. The paper is in the middle. Under the paper and on its right side there are small tabs, one for every place you can fold. You tap a tab, the game shows where the paint will land, and you press FOLD.</p>
     <h3>Core loop</h3>
     <ol>
-      <li>Compare the sheet with the target.</li>
-      <li>Tap a crease tab. A dashed line shows the crease; dotted rings preview where paint will land, and a red X marks a smudge.</li>
-      <li>Tap FOLD. The paper flips over, presses and opens: both sides print onto each other.</li>
-      <li>Repeat until the sheet matches the target. The print is framed in your Gallery.</li>
+      <li>Look at the target and the sheet.</li>
+      <li>Tap a crease tab and check the preview. Paint that would land in the wrong place is marked with a red X.</li>
+      <li>Fold. The paper flips, presses and opens again.</li>
+      <li>Keep going until the sheet matches the target, then the picture goes into your Gallery.</li>
     </ol>
-    <h3>Fold rules</h3>
-    <div class="rules">
-      <div class="card"><strong>Mirror print</strong>Every cell is mirrored across the crease; both sides print onto each other.</div>
-      <div class="card"><strong>Mixing</strong>Two colors on one cell mix into a new color.</div>
-      <div class="card"><strong>Paper edge</strong>Cells folded past the edge print nothing, so off-center creases protect one side.</div>
-      <div class="card"><strong>Permanent</strong>Paint can't be removed. Only adding is possible.</div>
-    </div>
+    <h3>Rules</h3>
+    <p>A fold mirrors the paper along the crease, and both sides print onto each other, not just one. If the crease is off-center, the part that goes past the edge of the paper doesn't print anything, so you can use the edge to protect one side. Paint never comes off, you can only add more.</p>
+    <p>Colors mix the way people already expect from school:</p>
     <div class="mix">
       <div class="card"><span class="dot" style="background:var(--blue)"></span>+<span class="dot" style="background:var(--yellow)"></span>=<span class="dot" style="background:var(--green)"></span>Green</div>
       <div class="card"><span class="dot" style="background:var(--red)"></span>+<span class="dot" style="background:var(--yellow)"></span>=<span class="dot" style="background:var(--orange)"></span>Orange</div>
       <div class="card"><span class="dot" style="background:var(--red)"></span>+<span class="dot" style="background:var(--blue)"></span>=<span class="dot" style="background:var(--purple)"></span>Purple</div>
     </div>
-    <p><strong>Objective:</strong> reproduce the target picture with a fixed number of folds.<br>
-    <strong>Win:</strong> the sheet matches the target exactly.<br>
-    <strong>Lose:</strong> paint lands where the target has none ("Smudged!"), or every fold is used without a match. Fail offer: Undo last fold (rewarded ad) or start over.</p>
-    <h3>Why it is satisfying</h3>
-    <ul>
-      <li><strong>The reveal.</strong> Unfolding a sheet into a perfect symmetric print is a natural "wow", the same pleasure as the ink-blot butterfly from art class.</li>
-      <li><strong>Mixing payoff.</strong> Blue and yellow pressing into green is surprising and colorful every time.</li>
-      <li><strong>Few moves, big thinking.</strong> Most sheets take 1 to 4 folds, so each choice matters and a win feels earned.</li>
-      <li><strong>Tactile animation:</strong> flip, press, peel. It suits haptics and ASMR sound design.</li>
-    </ul>
-    <h3>What is different from the market</h3>
-    <ul>
-      <li><strong>Folding is not new; printing is.</strong> Existing paper-fold puzzles fold colored paper to complete a picture. Here folding transfers wet paint, so one fold changes both sides at once.</li>
-      <li><strong>Additive, permanent mixing.</strong> A wrong fold leaves a visible smudge, so every mistake is readable.</li>
-      <li><strong>Give/receive mechanics.</strong> Tape, dry paint, stamps and water drops change which cells print or accept paint.</li>
-      <li><strong>A fresh verb in today's charts.</strong> The leaders (jam, sort, screw and conveyor games) move or clear pieces; Fold &amp; Print transforms the whole board in one action.</li>
-    </ul>
+    <p>You win when the sheet looks exactly like the target. You lose if paint lands somewhere the target is empty (I call it a smudge), or if you run out of folds. On a fail the player can watch an ad to undo the last fold, or restart.</p>
+    <h3>Why I think it feels good</h3>
+    <p>Most of the fun is in opening the paper. There is a short moment of waiting while it folds, and then you see the result all at once. Mixing makes that moment better, because you see a new color appear that wasn't on the paper before.</p>
+    <p>Levels only need 1 to 4 folds, so each fold is a real decision. I prefer that to a puzzle where you tap 50 times. And when a fold goes wrong, the smudge shows exactly where the paint went, so the player can see why they lost.</p>
+    <h3>How it compares to games on the market</h3>
+    <p>Folding paper is not a new idea in mobile puzzles. I found a few games that already do it, listed below. In most of them you fold to complete a shape. In Fold &amp; Print you fold to move paint, so one fold changes both halves of the sheet, colors can mix, and mistakes stay on the paper. The obstacles (tape, dry paint, stamps) are also built around which squares can give or take paint, which I haven't seen in the other fold games.</p>
+    <p>Compared with the games at the top of the charts right now, like jam, sort and conveyor games, the action is different too. Those games move pieces around one by one. Here one fold changes the whole board.</p>
     <h3>Reference games</h3>
     <div class="table-wrap"><table>
-      <thead><tr><th>Game</th><th>What it does</th><th>How Fold &amp; Print differs</th></tr></thead>
+      <thead><tr><th>Game</th><th>What it does</th><th>Difference</th></tr></thead>
       <tbody>
-        <tr><td><a href="https://apps.apple.com/py/app/paper-fold-paper-puzzle-3d/id1639255997?l=en-GB">Paper Fold: Paper Puzzle 3D</a> (Tumb Games)</td><td>Tap to fold along dashed lines until the picture is complete</td><td>Folds print paint both ways and mix colors; wrong folds smudge</td></tr>
-        <tr><td><a href="https://apps.apple.com/us/app/-/id6478161967">Color Fold Puzzle</a> (Fiber Games)</td><td>Fold colored papers in an order that reveals the right color combinations</td><td>Closest reference. Adds mirror printing, permanent mixing and give/receive obstacles</td></tr>
-        <tr><td><a href="https://apps.apple.com/be/app/color-mix-fold/id1629594628">Color Mix Fold</a> (Bedir Games)</td><td>Fold cards to find the right color</td><td>Picture targets, multi-fold planning, Gallery meta</td></tr>
-        <tr><td>Ink-blot butterfly (art class)</td><td>Fold-to-print reveal</td><td>Turned into a goal-driven puzzle</td></tr>
-        <tr><td>Color Block Jam / Pixel Flow!</td><td>Color goals, readable art, hybrid casual monetization</td><td>One whole-board action instead of moving pieces</td></tr>
+        <tr><td><a href="https://apps.apple.com/py/app/paper-fold-paper-puzzle-3d/id1639255997?l=en-GB">Paper Fold: Paper Puzzle 3D</a> (Tumb Games)</td><td>Fold along dashed lines to finish a picture</td><td>No paint, no mixing, no smudges</td></tr>
+        <tr><td><a href="https://apps.apple.com/us/app/-/id6478161967">Color Fold Puzzle</a> (Fiber Games)</td><td>Fold colored papers in the right order to show the right colors</td><td>The closest one. Mine adds mirror printing, permanent mixing and tape/dry paint</td></tr>
+        <tr><td><a href="https://apps.apple.com/be/app/color-mix-fold/id1629594628">Color Mix Fold</a> (Bedir Games)</td><td>Fold cards to find a color</td><td>Mine uses a full picture as the goal and needs several folds</td></tr>
+        <tr><td>Ink blot butterfly</td><td>The art class trick</td><td>Where the core feeling comes from</td></tr>
+        <tr><td>Color Block Jam, Pixel Flow!</td><td>Color goals, clean art, hybrid casual monetization</td><td>I keep their business model but not their piece-moving gameplay</td></tr>
       </tbody>
     </table></div>
   </section>
 
   <section id="depth">
     <h2>2. Gameplay depth</h2>
-    <p>Depth grows on three dials: <strong>how many folds</strong> (1 to 5), <strong>which creases</strong> (center, off-center, diagonal) and <strong>what the paper does</strong> (tape, dry paint, cut-outs). Each world turns one dial, so the game always feels like one new idea.</p>
+    <p>The game gets harder in three ways: more folds per level, harder creases (off-center and later diagonal), and papers with special squares. I only add one of these per world so the player is never learning two new things at once.</p>
     <div class="table-wrap"><table>
       <thead><tr><th>Levels</th><th>World</th><th>New idea</th><th>What the player learns</th></tr></thead>
       <tbody>
-        <tr><td class="num">1–10</td><td>Bugs</td><td>One center fold, single colors</td><td>Fold = mirror print</td></tr>
-        <tr><td class="num">11–25</td><td>Garden</td><td>Mixing: green, orange, purple</td><td>Plan which color meets which</td></tr>
-        <tr><td class="num">26–40</td><td>Seaside</td><td>Off-center creases, 2 folds</td><td>The paper edge protects one side; order</td></tr>
-        <tr><td class="num">41–60</td><td>Workshop</td><td>Tape, dry paint</td><td>Shielding and sequencing</td></tr>
-        <tr><td class="num">61–80</td><td>Festival</td><td>Diagonal folds, 3 folds</td><td>New symmetry axis</td></tr>
-        <tr><td class="num">81–100</td><td>Night sky</td><td>Stamps, cut-outs, double-thick paper</td><td>Partial prints, holes</td></tr>
-        <tr><td class="num">101+</td><td>Remix</td><td>Mechanics combined, 4–5 folds, larger sheets</td><td>Mastery</td></tr>
+        <tr><td class="num">1–10</td><td>Bugs</td><td>One fold in the middle, single colors</td><td>Folding copies the paint</td></tr>
+        <tr><td class="num">11–25</td><td>Garden</td><td>Green, orange, purple</td><td>Which color has to meet which</td></tr>
+        <tr><td class="num">26–40</td><td>Seaside</td><td>Off-center creases, 2 folds</td><td>The paper edge protects one side; order matters</td></tr>
+        <tr><td class="num">41–60</td><td>Workshop</td><td>Tape, dry paint</td><td>Protecting squares and planning order</td></tr>
+        <tr><td class="num">61–80</td><td>Festival</td><td>Diagonal folds, 3 folds</td><td>A new kind of mirror</td></tr>
+        <tr><td class="num">81–100</td><td>Night sky</td><td>Stamps, holes, thick paper</td><td>Partial prints</td></tr>
+        <tr><td class="num">101+</td><td>Remix</td><td>Everything mixed together, 4–5 folds, bigger sheets</td><td>Mastery</td></tr>
       </tbody>
     </table></div>
-    <h3>How difficulty rises but stays intuitive</h3>
-    <ul>
-      <li><strong>The rule never changes.</strong> Every mechanic only edits which cells give or receive paint.</li>
-      <li><strong>Preview before commit.</strong> Difficulty comes from planning ahead, never from hidden rules.</li>
-      <li><strong>More folds, more combinations.</strong> A 7×7 sheet has 12 creases, so 3 folds give about 1,700 sequences; players reason backward from the target.</li>
-      <li><strong>Sawtooth pacing:</strong> every 5th level Hard, every 10th Super Hard with bonus coins, then 2 easy levels.</li>
-    </ul>
-    <h3>Why it lasts 100+ levels</h3>
-    <ul>
-      <li>Levels come from a target picture plus a solution; a solver checks each one. The prototype already brute-forces every fold sequence per level.</li>
-      <li>The printed picture is the content and the reward, so each level looks new.</li>
-      <li>From level 100, recombining 6–8 mechanics on larger sheets gives near-endless variety.</li>
-    </ul>
+    <h3>Keeping it intuitive</h3>
+    <p>The basic rule never changes after level 1. Every new mechanic only decides which squares can print or receive paint. The preview also stays on the whole game, so the hard part is thinking ahead, not guessing hidden rules.</p>
+    <p>The number of options grows fast. A 7×7 sheet has 12 places to fold, so three folds already give around 1,700 possible orders. In practice players work backwards from the picture, which keeps it solvable. For pacing I would use the usual pattern: every 5th level is hard, every 10th is super hard with extra coins, and the two after it are easy.</p>
+    <h3>Getting to 100+ levels</h3>
+    <p>A level is just a picture plus the folds that make it, so the designer draws the picture and a solver checks that it works. I already do this in the prototype: every level is checked against every possible fold order. Because every level ends with a new picture, the game keeps looking fresh even when the mechanic is the same. After level 100 I would mostly combine existing mechanics on bigger sheets.</p>
   </section>
 
   <section id="obstacles">
     <h2>3. Obstacles &amp; mechanics</h2>
-    <p>Each element changes only which cells <strong>give</strong> or <strong>receive</strong> paint, so the level-1 rule never changes.</p>
+    <p>All of these change which squares can give paint or take paint. I did it this way on purpose so the fold itself works the same from the first level to the last.</p>
     <div class="table-wrap"><table>
-      <thead><tr><th>#</th><th>Element</th><th>Rule</th><th>Decision it creates</th><th>Intro</th><th>Prototype</th></tr></thead>
+      <thead><tr><th>#</th><th>Element</th><th>Rule</th><th>What it makes you think about</th><th>Intro</th><th>Prototype</th></tr></thead>
       <tbody>
-        <tr><td class="num">1</td><td><strong>Color mixing</strong></td><td>Two primaries on one cell make a secondary</td><td>Which blot must meet which</td><td class="num">11</td><td class="yes">Yes</td></tr>
-        <tr><td class="num">2</td><td><strong>Off-center crease</strong></td><td>Cells mirrored past the edge print nothing</td><td>Use the edge to protect a side</td><td class="num">26</td><td class="yes">Yes</td></tr>
-        <tr><td class="num">3</td><td><strong>Tape</strong></td><td>Taped cells can't receive paint; tape peels after one fold</td><td>Protect first, print later</td><td class="num">41</td><td class="yes">Yes</td></tr>
-        <tr><td class="num">4</td><td><strong>Dry paint</strong></td><td>Matte blots never print, but can still receive</td><td>Sources vs targets</td><td class="num">48</td><td class="yes">Yes</td></tr>
-        <tr><td class="num">5</td><td><strong>Diagonal fold</strong></td><td>Square sheets fold corner to corner</td><td>A new symmetry axis</td><td class="num">61</td><td class="no">No</td></tr>
-        <tr><td class="num">6</td><td><strong>Stamp</strong></td><td>Prints once, then turns dry</td><td>Pick the one fold it is used on</td><td class="num">70</td><td class="no">No</td></tr>
-        <tr><td class="num">7</td><td><strong>Cut-out hole</strong></td><td>Receives nothing; paint passes through on double folds</td><td>Plan multi-layer folds</td><td class="num">81</td><td class="no">No</td></tr>
-        <tr><td class="num">8</td><td><strong>Water drop</strong></td><td>Re-wets one dry blot when printed on</td><td>Wake up a dry source mid-puzzle</td><td class="num">90</td><td class="no">No</td></tr>
+        <tr><td class="num">1</td><td>Color mixing</td><td>Two primary colors on one square make a new color</td><td>Which blot has to land on which</td><td class="num">11</td><td class="yes">Yes</td></tr>
+        <tr><td class="num">2</td><td>Off-center crease</td><td>Paint folded past the edge prints nothing</td><td>Using the edge to protect a side</td><td class="num">26</td><td class="yes">Yes</td></tr>
+        <tr><td class="num">3</td><td>Tape</td><td>Taped squares can't get paint; the tape peels off after one fold</td><td>What to fold first</td><td class="num">41</td><td class="yes">Yes</td></tr>
+        <tr><td class="num">4</td><td>Dry paint</td><td>Dry blots don't print but can still get paint</td><td>Which blots are useful</td><td class="num">48</td><td class="yes">Yes</td></tr>
+        <tr><td class="num">5</td><td>Diagonal fold</td><td>Square sheets can fold corner to corner</td><td>A new mirror direction</td><td class="num">61</td><td class="no">No</td></tr>
+        <tr><td class="num">6</td><td>Stamp</td><td>Prints once, then becomes dry</td><td>Saving it for the right fold</td><td class="num">70</td><td class="no">No</td></tr>
+        <tr><td class="num">7</td><td>Hole</td><td>Gets nothing; paint goes through it on double folds</td><td>Folding in layers</td><td class="num">81</td><td class="no">No</td></tr>
+        <tr><td class="num">8</td><td>Water drop</td><td>Makes one dry blot wet again when it gets printed on</td><td>Bringing a blot back</td><td class="num">90</td><td class="no">No</td></tr>
       </tbody>
     </table></div>
-    <h3>Boosters</h3>
-    <ul><li><strong>Undo:</strong> take back the last fold; the main fail-screen offer.</li><li><strong>Hint:</strong> shows the next correct crease.</li><li><strong>Eraser:</strong> removes one smudged cell.</li></ul>
+    <p>Boosters: Undo (take back the last fold, also the main ad offer when you fail), Hint (shows the next correct crease) and Eraser (cleans one smudged square).</p>
   </section>
 
   <section id="paradigm">
     <h2>4. Design paradigm</h2>
-    <h3>Why the mechanic is fun</h3>
-    <ul>
-      <li><strong>Anticipation, then reveal.</strong> Every fold has a beat of suspense and a payoff.</li>
-      <li><strong>Low input, high thinking.</strong> One tap changes the whole board.</li>
-      <li><strong>Mistakes teach.</strong> A smudge shows exactly where paint went and why.</li>
-      <li><strong>Real-world intuition.</strong> Everyone already understands folding paper and mixing paint.</li>
-    </ul>
-    <h3>What keeps players until Day 3</h3>
+    <h3>Why I think it's fun</h3>
+    <p>Each fold has a small wait and then a reveal, and I think that rhythm is the core of the game. The player only taps once but has to think about the whole board, which feels smart without feeling busy. When something goes wrong the reason is visible on the paper. And nobody has to learn the theme: everyone knows what folding paper and mixing paint look like.</p>
+    <h3>Getting players to Day 3</h3>
     <div class="table-wrap"><table>
-      <thead><tr><th>Day</th><th>Hook</th><th>Why it pulls them back</th></tr></thead>
+      <thead><tr><th>Day</th><th>What happens</th><th>Why they come back</th></tr></thead>
       <tbody>
-        <tr><td>Day 1</td><td>15 quick sheets fill the first Gallery wall; mixing unlocks at level 11</td><td>An early "aha" and a finished collection in session 1</td></tr>
-        <tr><td>Day 2</td><td>Daily Print + login streak</td><td>A fresh picture and a reason beyond the next level</td></tr>
-        <tr><td>Day 3</td><td>Seaside world opens off-center folds; streak gives a free Hint</td><td>A new idea lands as the basic fold starts to feel known</td></tr>
+        <tr><td>Day 1</td><td>The first 15 levels fill the first Gallery wall; mixing starts at level 11</td><td>They get the "aha" early and finish a collection in the first session</td></tr>
+        <tr><td>Day 2</td><td>Daily Print (a special sheet each day) and a login streak</td><td>Something new besides the next level</td></tr>
+        <tr><td>Day 3</td><td>The Seaside world opens off-center folds; the streak gives a free Hint</td><td>A new idea right when the basic fold could start to feel familiar</td></tr>
       </tbody>
     </table></div>
-    <p>Meta layer: prints are framed in a <strong>Gallery</strong> the player decorates room by room with coins.</p>
-    <h3>How it avoids repetition</h3>
-    <ul>
-      <li>One new mechanic per world: a can't-fail intro, a practice level, then combinations.</li>
-      <li>Every level is a new picture.</li>
-      <li>Level types rotate: one-fold "spot the crease", multi-fold planning, tape-order puzzles, big poster sheets.</li>
-      <li>Events every 2 weeks refresh goals without new code.</li>
-    </ul>
+    <p>For the meta, finished pictures are framed and hung in a Gallery the player decorates with coins. It's cheap to build and it means every level leaves something behind.</p>
+    <h3>Avoiding repetition</h3>
+    <p>Each world adds one mechanic, first in a level you can't lose, then a practice level, then mixed with the older ones. Every level has a different picture. I would also rotate level types: quick one-fold levels, longer planning levels, tape puzzles and big poster sheets. Events every two weeks (holiday colors, printing races) give new goals without new code.</p>
   </section>
 
   <section id="market">
     <h2>5. Marketability</h2>
-    <h3>Why players would download it</h3>
-    <ul>
-      <li>The ad shows the childhood ink-blot fold and asks "where would <em>you</em> fold?"</li>
-      <li>The answer is visible in one second, ideal for fail ads and "choose the right fold" ads.</li>
-      <li>Every win produces a pretty, shareable print.</li>
-    </ul>
-    <h3>First 30 seconds</h3>
+    <h3>Why people would download it</h3>
+    <p>The ad shows something everyone has done as a kid and asks "where would you fold?". You can see the answer in a second, which works well for fail ads and choice ads. Every win also ends with a nice picture people might want to screenshot.</p>
+    <h3>The first 30 seconds</h3>
     <div class="table-wrap"><table>
       <thead><tr><th>Time</th><th>What the player sees</th><th>Purpose</th></tr></thead>
       <tbody>
-        <tr><td class="num">0–3 s</td><td>Half a butterfly in wet purple paint; a pulsing crease tab says TAP</td><td>Zero-text start</td></tr>
-        <tr><td class="num">3–6 s</td><td>Paper flips, presses, opens: full symmetric butterfly</td><td>The reveal</td></tr>
-        <tr><td class="num">6–14 s</td><td>Leaf sheet: blue on the left, yellow on the right; fold, they press into green</td><td>The mixing "aha"</td></tr>
-        <tr><td class="num">14–24 s</td><td>Lighthouse: the wrong crease smudges red, undo, the right one prints clean</td><td>Tension and skill</td></tr>
-        <tr><td class="num">24–30 s</td><td>Prints framed on the Gallery wall</td><td>Reward and a reason to continue</td></tr>
+        <tr><td class="num">0–3 s</td><td>Half a butterfly in wet purple paint and a blinking tab that says TAP</td><td>Start without any text</td></tr>
+        <tr><td class="num">3–6 s</td><td>The paper folds and opens into a full butterfly</td><td>First reveal</td></tr>
+        <tr><td class="num">6–14 s</td><td>A leaf: blue on the left, yellow on the right, fold, it turns green</td><td>Shows mixing</td></tr>
+        <tr><td class="num">14–24 s</td><td>A lighthouse: the wrong fold smudges red, undo, the right fold prints clean</td><td>Shows there is a right and wrong answer</td></tr>
+        <tr><td class="num">24–30 s</td><td>The pictures get framed on the Gallery wall</td><td>Reward and a reason to keep going</td></tr>
       </tbody>
     </table></div>
-    <h3>Ad angles to test</h3>
-    <ol><li><strong>"Which fold?"</strong> Three crease options; wrong pick smudges, then the right one.</li><li><strong>ASMR print:</strong> slow-motion close-up of paint pressing and peeling apart.</li><li><strong>Impossible picture:</strong> a complex poster from 4 folds, "only 3% can print this".</li></ol>
-    <h3>What makes it stand out</h3>
-    <p>Fold puzzles exist, but they fold paper to complete a shape. Fold &amp; Print folds to <em>print</em>: wet paint transfers both ways, colors mix, and a wrong fold smudges. Every fold is a setup, a choice and a reveal in under 5 seconds.</p>
-    <h3>Why it can perform now</h3>
-    <ul>
-      <li>Proven hybrid casual model: rewarded Undo on fail, interstitials after level 10, booster IAP, ad-free pack.</li>
-      <li>Cheap to produce: 2D art, one core interaction, levels built from pictures with an auto-solver.</li>
-      <li>Easy creative iteration: a single fold is a complete story in under 5 seconds.</li>
-    </ul>
+    <h3>Ad ideas to test</h3>
+    <ol><li>"Which fold?": three crease options, the player picks the wrong one and it smudges, then the right one.</li><li>Slow-motion close-up of the paint pressing and peeling apart, with sound.</li><li>A big picture made with 4 folds, with a "can you do this?" challenge.</li></ol>
+    <h3>Why it could work right now</h3>
+    <p>It uses the same business model as current hybrid casual games: rewarded undo when you fail, interstitials after level 10, boosters and an ad-free pack. It is also cheap to make, with 2D art, one main interaction and levels made from pictures. For ads, one fold already has a setup, a choice and a result in under five seconds, so it's easy to make and test a lot of creatives.</p>
   </section>
 
   <section id="plan">
     <h2>Prototype and 4-week production plan</h2>
-    <p>The <a href="./">playable prototype</a> has 6 sheets covering mirror printing, mixing, off-center creases, tape and dry paint, with fold preview, smudge fail and Undo. Every sheet was brute-force checked: each has a winning sequence, and most first folds smudge.</p>
-    <p>Soft-launch scope for a team of 1 programmer, 1 artist and 1 game designer: 60 levels, mechanics 1–4, boosters and the Gallery.</p>
+    <p>I made a <a href="./">playable prototype</a> with 6 levels covering folding, mixing, off-center creases, tape and dry paint. It has the fold preview, the smudge fail and undo. I also checked every level with a script that tries every possible fold order: each level can be solved, and most first folds end in a smudge, so the choice matters.</p>
+    <p>For a team of 1 programmer, 1 artist and 1 game designer, the 4-week target is a soft launch build with 60 levels, mechanics 1 to 4, boosters and the Gallery.</p>
     <div class="table-wrap"><table>
       <thead><tr><th>Week</th><th>Programmer</th><th>Artist</th><th>Game designer</th></tr></thead>
       <tbody>
-        <tr><td class="num">1</td><td>Fold logic, flip/press animation, preview, win/lose</td><td>Paper and paint style, 10 pictures</td><td>Mixing rules, levels 1–20, level format</td></tr>
-        <tr><td class="num">2</td><td>Tape, dry paint, off-center creases, level editor and solver</td><td>UI, fold VFX, haptics list, 15 pictures</td><td>Levels 21–40, difficulty curve, playtests</td></tr>
+        <tr><td class="num">1</td><td>Fold logic, fold animation, preview, win/lose</td><td>Paper and paint style, 10 pictures</td><td>Mixing rules, levels 1–20, level format</td></tr>
+        <tr><td class="num">2</td><td>Tape, dry paint, off-center creases, level editor and solver</td><td>UI, fold effects, haptics list, 15 pictures</td><td>Levels 21–40, difficulty curve, playtests</td></tr>
         <tr><td class="num">3</td><td>Boosters, Gallery, ads SDK, analytics</td><td>Gallery rooms, 20 pictures, store icons</td><td>Levels 41–60, economy, ad briefs</td></tr>
-        <tr><td class="num">4</td><td>Bug fixing, performance, soft-launch build</td><td>3 ad videos, polish</td><td>Re-tune from playtest data, launch checklist</td></tr>
+        <tr><td class="num">4</td><td>Bug fixing, performance, soft launch build</td><td>3 ad videos, polish</td><td>Re-tune levels from playtest data, launch checklist</td></tr>
       </tbody>
     </table></div>
-    <p><strong>Risk to watch:</strong> players may not predict mirror positions at first. Mitigation: the live landing preview and can't-fail intro sheets.</p>
+    <p>The biggest risk I see is that some players won't be able to picture where the paint lands. The preview and the easy first level of every new mechanic are there to fix that.</p>
   </section>
 
-  <section id="license">
+  
+<section id="license">
     <h2>License</h2>
     <div class="card">
       <p><strong>Copyright © 2026 Ihsan Mahendra. All rights reserved.</strong><br>Hak Cipta © 2026 Ihsan Mahendra. Hak cipta dilindungi undang-undang.</p>
