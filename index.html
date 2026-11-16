@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Tint Tangle — Prototype</title>
+<style>
+  :root { --bg:#14151c; --panel:#1e2030; --ink:#f2f2f5; --quiet:#9a9cb0; --line:#3a3d55; --accent:#ffd34d; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; height:100%; background:var(--bg); color:var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; overflow:hidden; }
+  #wrap { position:relative; height:100%; max-width:480px; margin:0 auto; }
+  canvas { display:block; width:100%; height:100%; touch-action:manipulation; }
+  .overlay { position:absolute; inset:0; display:none; flex-direction:column; align-items:center;
+    justify-content:center; gap:14px; background:rgba(10,10,16,.82); text-align:center; padding:24px; }
+  .overlay.show { display:flex; }
+  .overlay h1 { margin:0; font-size:34px; letter-spacing:.5px; }
+  .overlay p { margin:0; color:var(--quiet); max-width:300px; line-height:1.4; }
+  button { font:inherit; font-weight:700; font-size:17px; border:0; border-radius:14px; padding:14px 26px;
+    background:var(--accent); color:#1b1b1b; cursor:pointer; min-width:200px; }
+  button.ghost { background:transparent; color:var(--ink); border:2px solid var(--line); }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c"></canvas>
+  <div class="overlay" id="win"><h1>Painted!</h1><p id="winText"></p><button id="next">Next level</button></div>
+  <div class="overlay" id="lose"><h1>Dock full</h1><p>No room to park a bucket. Try a different order, or take one extra slot.</p>
+    <button id="slot">+1 Dock slot</button><button class="ghost" id="retry">Retry</button></div>
+  <div class="overlay" id="done"><h1>Prototype complete</h1><p>That's every level in this build. Thanks for playing Tint Tangle.</p><button id="again">Play again</button></div>
+</div>
+<script>
+// ---------- Color model: R=1, Y=2, B=4, mixes are bitmasks ----------
+const R = 1, Y = 2, B = 4;
+const NEED = { r: R, y: Y, b: B, g: B | Y, o: R | Y, p: R | B };
+const PAINT = { [R]: '#ef4b4b', [Y]: '#ffd34d', [B]: '#3e8bff', [B | Y]: '#3fcf6a', [R | Y]: '#ff9636', [R | B]: '#a45bff' };
+const LETTER = { [R]: 'R', [Y]: 'Y', [B]: 'B' };
+
+// ---------- Levels ----------
+// pic: rows of r/y/b/g/o/p, '.' = no pixel, uppercase = frozen (needs one hit of any color first)
+// rack: columns front→back of colors; '?' prefix = hidden. Ammo is split evenly per color automatically.
+const LEVELS = [
+  { name: 'Cherry', tip: 'Tap a bucket. It rides the belt and paints pixels of its color.',
+    pic: ['...yy.', '..y..y', '.rr.rr', 'rrrrrr', '.rr.rr', 'bbbbbb'],
+    rack: [['r'], ['y'], ['b']] },
+  { name: 'Frog', tip: 'Green = Blue + Yellow. Paint both on the same pixel to mix it.',
+    pic: ['.gg..gg.', 'gbbggbbg', 'gggggggg', 'gg....gg', 'gggggggg', '.gggggg.', '.yy..yy.'],
+    rack: [['b', 'b'], ['y', 'y'], ['b', 'y']], dock: 4 },
+  { name: 'Sunset', tip: 'Orange = Red + Yellow. Mixed pixels on the edge block the ones behind them.',
+    pic: ['oooooooo', 'oyyyyyyo', 'oyyrryyo', 'ooorrooo', 'bbbbbbbb', 'bbgbbgbb'],
+    rack: [['y', 'r', 'b', 'r'], ['r', 'y', 'y', 'r'], ['b', 'y', 'b', 'y']], dock: 3 },
+  { name: 'Grapes', tip: 'Purple = Red + Blue. "?" buckets reveal their color at the front.',
+    pic: ['...gg...', '..gg....', '.pppppp.', 'pprppppp', '.pppprp.', '..pppp..', '...pp...'],
+    rack: [['r', '?b', 'r', 'b'], ['b', '?y', 'r', 'r'], ['?r', 'b', 'b', 'y']], dock: 3 },
+  { name: 'Parrot', tip: 'Frozen pixels (white frame) take one hit of any color to crack the ice.',
+    pic: ['..RRRR..', '.rryrrr.', '.rrrrRR.', '..gggg..', '.ggOOgg.', '.gg..gg.', '..b..b..'],
+    rack: [['r', 'r', '?y'], ['y', 'b', 'r'], ['b', '?r', 'y'], ['y', 'r', 'b']], dock: 3 },
+];
+
+// ---------- State ----------
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+let W, H, DPR, L, lvl = 0, grid, gw, gh, rack, dock, dockMax, belt, particles, cellPx, gx, gy, state, flashes, stepTimer;
+const STEP_MS = 70, BELT_MAX = 3;
+
+function load(i) {
+  lvl = i; L = LEVELS[i];
+  gh = L.pic.length; gw = Math.max(...L.pic.map(r => r.length));
+  grid = [];
+  const need = { [R]: 0, [Y]: 0, [B]: 0 };
+  for (let y = 0; y < gh; y++) for (let x = 0; x < gw; x++) {
+    const ch = (L.pic[y][x] || '.');
+    const k = ch.toLowerCase();
+    if (!NEED[k]) { grid.push(null); continue; }
+    const n = NEED[k];
+    [R, Y, B].forEach(c => { if (n & c) need[c]++; });
+    const ice = ch !== k;
+    if (ice) need.ice = (need.ice || 0) + 1;
+    grid.push({ x, y, need: n, has: 0, ice, pop: 0 });
+  }
+  // Build rack, split ammo evenly across buckets of each color; ice hits go on yellow (most plentiful early) buckets.
+  const count = { [R]: 0, [Y]: 0, [B]: 0 };
+  const cols = L.rack.map(col => col.map(s => { const hid = s[0] === '?'; const c = NEED[hid ? s[1] : s]; count[c]++; return { c, hid }; }));
+  const left = { ...need }, bucketsLeft = { ...count };
+  cols.forEach(col => col.forEach(bk => {
+    const share = Math.ceil(left[bk.c] / bucketsLeft[bk.c]);
+    left[bk.c] -= share; bucketsLeft[bk.c]--;
+    bk.ammo = share;
+  }));
+  rack = cols; dock = []; dockMax = L.dock || 5; belt = []; particles = []; flashes = [];
+  state = 'play';
+  hide();
+  layout();
+}
+
+// ---------- Layout ----------
+function layout() {
+  DPR = window.devicePixelRatio || 1;
+  const r = cv.getBoundingClientRect();
+  W = r.width; H = r.height;
+  cv.width = W * DPR; cv.height = H * DPR;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const area = Math.min(W - 40, H * 0.42);
+  cellPx = Math.floor(area / (Math.max(gw, gh) + 2));
+  gx = (W - gw * cellPx) / 2;
+  gy = 116 + cellPx;
+}
+window.addEventListener('resize', () => { if (L) layout(); });
+
+// Belt path: one step per cell around the grid, clockwise. Each step knows which way it sprays.
+function pathLen() { return 2 * gw + 2 * gh; }
+function pathAt(s) {
+  s = ((s % pathLen()) + pathLen()) % pathLen();
+  if (s < gw) return { x: s, y: -1, dx: 0, dy: 1 };                     // top, spray down
+  s -= gw; if (s < gh) return { x: gw, y: s, dx: -1, dy: 0 };          // right, spray left
+  s -= gh; if (s < gw) return { x: gw - 1 - s, y: gh, dx: 0, dy: -1 }; // bottom, spray up
+  s -= gw; return { x: -1, y: gh - 1 - s, dx: 1, dy: 0 };              // left, spray right
+}
+function cellAt(x, y) { return (x < 0 || y < 0 || x >= gw || y >= gh) ? null : grid[y * gw + x]; }
+const done = p => p.has === p.need && !p.ice;
+
+// First unfinished pixel along the spray line. Finished pixels and holes let paint pass through.
+function frontPixel(p) {
+  let x = p.x + p.dx, y = p.y + p.dy;
+  while (x >= 0 && y >= 0 && x < gw && y < gh) {
+    const c = cellAt(x, y);
+    if (c && !done(c)) return c;
+    x += p.dx; y += p.dy;
+  }
+  return null;
+}
+
+// ---------- Input ----------
+cv.addEventListener('pointerdown', e => {
+  if (state !== 'play') return;
+  const r = cv.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
+  // Dock buckets
+  if (belt.length >= BELT_MAX) { shakeBelt = 8; return; } // belt full: nothing leaves the rack or dock
+  dockSlots().forEach((s, i) => { if (dock[i] && hit(mx, my, s)) launch(dock.splice(i, 1)[0]); });
+  // Rack fronts
+  rackSlots().forEach((col, ci) => { const s = col[0]; if (s && rack[ci].length && hit(mx, my, s)) launch(rack[ci].shift()); });
+});
+function hit(mx, my, s) { return Math.hypot(mx - s.x, my - s.y) <= s.r + 6; }
+function launch(bk) {
+  if (belt.length >= BELT_MAX) { shakeBelt = 8; return; }
+  bk.hid = false;
+  // Spread launched buckets so they don't stack on the same belt cell.
+  const taken = new Set(belt.map(b => b.step % pathLen()));
+  let s = 0; while (taken.has(s)) s++;
+  belt.push({ ...bk, step: s, start: s, lap: 0, t: 0 });
+}
+let shakeBelt = 0;
+
+// ---------- Simulation ----------
+let last = performance.now(), acc = 0;
+function tick(now) {
+  const dt = Math.min(50, now - last); last = now;
+  if (state === 'play') {
+    acc += dt;
+    while (acc >= STEP_MS) { acc -= STEP_MS; step(); }
+  }
+  particles = particles.filter(p => (p.t += dt) < p.life);
+  grid.forEach(c => { if (c && c.pop > 0) c.pop = Math.max(0, c.pop - dt / 260); });
+  if (shakeBelt > 0) shakeBelt -= dt / 30;
+  draw(acc / STEP_MS);
+  requestAnimationFrame(tick);
+}
+
+function step() {
+  for (const bk of belt) {
+    const p = pathAt(bk.step), tgt = frontPixel(p);
+    if (tgt && bk.ammo > 0) {
+      if (tgt.ice) { tgt.ice = false; spray(p, tgt, '#e8f4ff'); tgt.pop = 0.6; } // ice costs a pass, not paint
+      else if ((tgt.need & bk.c) && !(tgt.has & bk.c)) {
+        tgt.has |= bk.c; bk.ammo--; spray(p, tgt, PAINT[bk.c]);
+        tgt.pop = done(tgt) ? 1 : 0.5;
+        if (done(tgt) && tgt.need !== bk.c) flashes.push({ x: tgt.x, y: tgt.y, t: 0 });
+      }
+    }
+    bk.step++;
+    if (bk.step - bk.start >= pathLen()) bk.lap = 1;
+  }
+  // Empty buckets pop; buckets that finished a lap park in the dock.
+  for (let i = belt.length - 1; i >= 0; i--) {
+    const bk = belt[i];
+    if (bk.ammo <= 0) { belt.splice(i, 1); continue; }
+    if (bk.lap) {
+      belt.splice(i, 1);
+      if (dock.length >= dockMax) { lose(); return; }
+      dock.push({ c: bk.c, ammo: bk.ammo, hid: false });
+    }
+  }
+  if (grid.every(c => !c || done(c))) win();
+  else if (outOfPaint()) lose(true);
+}
+
+// Lose early if the paint left can no longer finish the picture.
+function outOfPaint() {
+  const left = { [R]: 0, [Y]: 0, [B]: 0 }, need = { [R]: 0, [Y]: 0, [B]: 0 };
+  [...belt, ...dock, ...rack.flat()].forEach(b => left[b.c] += b.ammo);
+  grid.forEach(c => c && [R, Y, B].forEach(k => { if ((c.need & k) && !(c.has & k)) need[k]++; }));
+  return [R, Y, B].some(k => left[k] < need[k]);
+}
+
+function spray(p, tgt, color) {
+  const from = cellCenter(p.x, p.y), to = cellCenter(tgt.x, tgt.y);
+  for (let i = 0; i < 6; i++) particles.push({ from, to, color, t: -i * 10, life: 180 + i * 10, j: (Math.random() - .5) * cellPx * .5 });
+}
+
+// ---------- Win / lose ----------
+const $ = id => document.getElementById(id);
+function hide() { ['win', 'lose', 'done'].forEach(id => $(id).classList.remove('show')); }
+function win() {
+  state = 'won';
+  setTimeout(() => {
+    if (lvl === LEVELS.length - 1) { $('done').classList.add('show'); return; }
+    $('winText').textContent = `${L.name} added to your Gallery.`;
+    $('win').classList.add('show');
+  }, 650);
+}
+function lose(outOfPaint) {
+  state = 'lost';
+  $('lose').querySelector('p').textContent = outOfPaint
+    ? 'Out of paint. Some pixels were never reached in time. Try a different order.'
+    : 'No room to park a bucket. Try a different order, or take one extra slot.';
+  $('slot').style.display = outOfPaint ? 'none' : '';
+  $('lose').classList.add('show');
+}
+$('next').onclick = () => load(lvl + 1);
+$('retry').onclick = () => load(lvl);
+$('again').onclick = () => load(0);
+// +1 slot: continue the same board (in the real game this is the rewarded-ad offer).
+$('slot').onclick = () => { dockMax++; hide(); state = 'play'; };
+
+// ---------- Drawing ----------
+function cellCenter(x, y) { return { x: gx + (x + .5) * cellPx, y: gy + (y + .5) * cellPx }; }
+function dockSlots() {
+  const s = Math.min(46, (W - 48) / (dockMax + .5)), y = gy + (gh + 1) * cellPx + 52;
+  const x0 = W / 2 - (dockMax * s) / 2 + s / 2;
+  return Array.from({ length: dockMax }, (_, i) => ({ x: x0 + i * s, y, r: s * .38 }));
+}
+function rackSlots() {
+  const top = dockSlots()[0].y + 72, n = rack.length;
+  const gap = Math.min(78, (W - 40) / n), r = Math.min(28, gap * .38), x0 = W / 2 - ((n - 1) * gap) / 2;
+  return rack.map((col, ci) => Array.from({ length: Math.max(col.length, 1) }, (_, k) => ({ x: x0 + ci * gap, y: top + k * (r * 2 + 10), r })));
+}
+
+function draw(frac) {
+  ctx.clearRect(0, 0, W, H);
+  // HUD
+  ctx.fillStyle = '#9a9cb0'; ctx.font = '600 13px system-ui'; ctx.textAlign = 'center';
+  ctx.fillText(`LEVEL ${lvl + 1}`, W / 2, 30);
+  ctx.fillStyle = '#f2f2f5'; ctx.font = '800 22px system-ui'; ctx.fillText(L.name, W / 2, 56);
+  ctx.fillStyle = '#9a9cb0'; ctx.font = '13px system-ui'; wrapText(L.tip, W / 2, 78, W - 64, 16);
+
+  // Belt
+  const pad = cellPx * .5, bx = gx - pad - cellPx * .5, by = gy - pad - cellPx * .5;
+  const bw = gw * cellPx + cellPx * 2, bh = gh * cellPx + cellPx * 2;
+  const shake = shakeBelt > 0 ? Math.sin(shakeBelt * 3) * 3 : 0;
+  ctx.save(); ctx.translate(shake, 0);
+  roundRect(gx - cellPx, gy - cellPx, bw, bh, cellPx * .6); ctx.strokeStyle = '#2b2e44'; ctx.lineWidth = cellPx * .9; ctx.stroke();
+  ctx.setLineDash([cellPx * .3, cellPx * .3]); ctx.lineDashOffset = -performance.now() / 40;
+  roundRect(gx - cellPx, gy - cellPx, bw, bh, cellPx * .6); ctx.strokeStyle = '#3a3d55'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.setLineDash([]); ctx.restore();
+
+  // Pixels
+  for (const c of grid) {
+    if (!c) continue;
+    const s = cellPx - 2, px = gx + c.x * cellPx + 1, py = gy + c.y * cellPx + 1, k = 1 + c.pop * .18;
+    ctx.save(); ctx.translate(px + s / 2, py + s / 2); ctx.scale(k, k);
+    if (done(c)) { ctx.fillStyle = PAINT[c.need]; rr(-s / 2, -s / 2, s, s, 4); ctx.fill(); }
+    else {
+      // Target hint: faint target color
+      ctx.globalAlpha = .22; ctx.fillStyle = PAINT[c.need]; rr(-s / 2, -s / 2, s, s, 4); ctx.fill(); ctx.globalAlpha = 1;
+      if (c.has) { // half-mixed: stripes of the color it already has
+        ctx.save(); rr(-s / 2, -s / 2, s, s, 4); ctx.clip(); ctx.strokeStyle = PAINT[c.has]; ctx.lineWidth = s * .16;
+        for (let d = -s; d < s; d += s * .34) { ctx.beginPath(); ctx.moveTo(d, -s / 2); ctx.lineTo(d + s, s / 2); ctx.stroke(); }
+        ctx.restore();
+      }
+      ctx.strokeStyle = c.ice ? '#e8f4ff' : '#4a4e6a'; ctx.lineWidth = c.ice ? 3 : 1; rr(-s / 2, -s / 2, s, s, 4); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  // Mix flashes
+  flashes = flashes.filter(f => (f.t += 16) < 300);
+  for (const f of flashes) { const p = cellCenter(f.x, f.y); ctx.globalAlpha = 1 - f.t / 300; ctx.strokeStyle = '#fff'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(p.x, p.y, cellPx * (.4 + f.t / 300), 0, 7); ctx.stroke(); ctx.globalAlpha = 1; }
+
+  // Spray particles
+  for (const p of particles) {
+    if (p.t < 0) continue;
+    const u = p.t / p.life, x = p.from.x + (p.to.x - p.from.x) * u + p.j * (1 - u), y = p.from.y + (p.to.y - p.from.y) * u + p.j * (1 - u);
+    ctx.fillStyle = p.color; ctx.globalAlpha = 1 - u * .5; ctx.beginPath(); ctx.arc(x, y, cellPx * .12, 0, 7); ctx.fill(); ctx.globalAlpha = 1;
+  }
+
+  // Buckets on belt (interpolate between steps)
+  for (const bk of belt) {
+    const a = cellCenter(pathAt(bk.step).x, pathAt(bk.step).y), b = cellCenter(pathAt(bk.step + 1).x, pathAt(bk.step + 1).y);
+    bucket(a.x + (b.x - a.x) * frac, a.y + (b.y - a.y) * frac, cellPx * .55, bk, false);
+  }
+
+  // Dock
+  const ds = dockSlots();
+  ctx.fillStyle = dock.length >= dockMax - 1 ? '#ff6b6b' : '#9a9cb0'; ctx.font = '700 12px system-ui'; ctx.textAlign = 'center';
+  ctx.fillText(`DOCK ${dock.length}/${dockMax}`, W / 2, ds[0].y - ds[0].r - 10);
+  ds.forEach((s, i) => { ctx.strokeStyle = '#3a3d55'; ctx.lineWidth = 2; rr(s.x - s.r - 3, s.y - s.r - 3, s.r * 2 + 6, s.r * 2 + 6, 8); ctx.stroke();
+    if (dock[i]) bucket(s.x, s.y, s.r, dock[i], true); });
+
+  // Rack
+  const rs = rackSlots();
+  ctx.fillStyle = '#9a9cb0'; ctx.fillText('RACK', W / 2, rs[0][0].y - rs[0][0].r - 12);
+  rack.forEach((col, ci) => col.forEach((bk, k) => { const s = rs[ci][k]; ctx.globalAlpha = k === 0 ? 1 : .45; bucket(s.x, s.y, s.r, bk, k === 0); ctx.globalAlpha = 1; }));
+  ctx.fillStyle = '#5d6080'; ctx.font = '12px system-ui';
+  ctx.fillText(`Belt ${belt.length}/${BELT_MAX}  ·  tap the front bucket of a column`, W / 2, H - 16);
+}
+
+function bucket(x, y, r, bk, ring) {
+  const hidden = bk.hid;
+  ctx.fillStyle = hidden ? '#555872' : PAINT[bk.c];
+  ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+  if (ring) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke(); }
+  ctx.fillStyle = hidden ? '#fff' : '#1b1b1b'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = `800 ${Math.round(r * .62)}px system-ui`;
+  ctx.fillText(hidden ? '?' : `${LETTER[bk.c]}${bk.ammo}`, x, y + 1);
+  ctx.textBaseline = 'alphabetic';
+}
+function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
+function roundRect(x, y, w, h, r) { rr(x, y, w, h, r); }
+function wrapText(t, x, y, maxW, lh) {
+  const words = t.split(' '); let line = '';
+  for (const w of words) { const test = line ? line + ' ' + w : w;
+    if (ctx.measureText(test).width > maxW && line) { ctx.fillText(line, x, y); line = w; y += lh; } else line = test; }
+  ctx.fillText(line, x, y);
+}
+
+load(0);
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>
